@@ -42,96 +42,181 @@ st.set_page_config(
     page_title="OdooExcelCleaner",
     page_icon="🧹",
     layout="wide",
-    initial_sidebar_state="expanded",
 )
 
-# ─── CSS personnalisé ─────────────────────────────────────────────────────────
+# ─── CSS Thème Premium 2026 (Tailwind-like + Glassmorphism) ──────────────────
 st.markdown(
     """
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
-    .main-header {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        border-radius: 16px;
-        padding: 2rem 2.5rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid rgba(255,255,255,0.08);
+    :root {
+        --primary: #8b5cf6;
+        --secondary: #ec4899;
+        --bg-dark: #0f172a;
     }
-    .main-header h1 { color: #e2e8f0; font-size: 2rem; font-weight: 700; margin: 0; }
-    .main-header p  { color: #94a3b8; margin: 0.4rem 0 0; font-size: 0.95rem; }
 
-    .stat-card {
-        background: #1a1a2e;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 1rem 1.2rem;
+    * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+
+    /* Fond global */
+    .stApp {
+        background-color: var(--bg-dark);
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+    }
+
+    /* Header Styling */
+    .main-header {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
         text-align: center;
     }
-    .stat-card .value { font-size: 2rem; font-weight: 700; color: #ffffff; }
-    .stat-card .label { font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
-
-    .action-badge {
-        display: inline-block;
-        background: rgba(99,179,237,0.12);
-        border: 1px solid rgba(99,179,237,0.3);
-        border-radius: 20px;
-        padding: .2rem .75rem;
-        font-size: 0.78rem;
-        color: #63b3ed;
-        margin: .15rem;
-    }
-    .warning-box {
-        background: rgba(245,158,11,0.1);
-        border: 1px solid rgba(245,158,11,0.4);
-        border-radius: 10px;
-        padding: .8rem 1rem;
-        color: #fbbf24;
-        font-size: 0.88rem;
-    }
-    .success-box {
-        background: rgba(16,185,129,0.1);
-        border: 1px solid rgba(16,185,129,0.4);
-        border-radius: 10px;
-        padding: .8rem 1rem;
-        color: #34d399;
-        font-size: 0.88rem;
+    .gradient-text {
+        background: linear-gradient(90deg, #8b5cf6, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        font-size: 3rem;
     }
 
-    div[data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
-    div[data-testid="stExpander"]  { border-radius: 10px; }
+    /* Cards & Containers */
+    div[data-testid="stExpander"] {
+        background: rgba(30, 41, 59, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-radius: 16px !important;
+    }
 
+    /* Buttons */
     .stButton > button {
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all .2s ease;
+        background: linear-gradient(90deg, #7c3aed, #db2777) !important;
+        border: none !important;
+        color: white !important;
+        padding: 0.6rem 1.5rem !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25) !important;
     }
-    .stButton > button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4) !important;
+    }
 
-    .sidebar-section {
-        background: rgba(255,255,255,0.03);
-        border-radius: 10px;
-        padding: .8rem;
-        margin-bottom: .8rem;
-        border: 1px solid rgba(255,255,255,0.06);
+    /* Dataframe Styling */
+    div[data-testid="stDataFrame"] {
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        padding: 10px;
+        background: rgba(15, 23, 42, 0.8) !important;
+    }
+
+    /* Inputs */
+    input {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border-radius: 10px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+    }
+
+    /* Login UI */
+    .login-container {
+        max-width: 500px;
+        margin: 100px auto;
+        padding: 4rem;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 40px;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.5);
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ─── En-tête ──────────────────────────────────────────────────────────────────
+# ─── Chargement du mapping ────────────────────────────────────────────────────
+
+def load_mapping() -> dict:
+    """Charge le mapping JSON, crée un fichier d'exemple si absent."""
+    os.makedirs(os.path.dirname(MAPPING_PATH), exist_ok=True)
+    if not os.path.exists(MAPPING_PATH):
+        default = {
+            "Lignes de facture/BU": "BU",
+            "Delivery mode": "Mode de livraison",
+            "Prix unitaire": "Prix HT",
+        }
+        with open(MAPPING_PATH, "w", encoding="utf-8") as f:
+            json.dump(default, f, ensure_ascii=False, indent=2)
+    with open(MAPPING_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+# ─── Initialisation session_state ────────────────────────────────────────────
+
+def init_state() -> None:
+    defaults = {
+        "authenticated": False,
+        "df_original": None,
+        "df_current": None,
+        "history": [],
+        "action_log": [],
+        "mapping": load_mapping(),
+        "file_name": None,
+    }
+    for k, v in defaults.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+
+init_state()
+
+# ─── Login Page ──────────────────────────────────────────────────────────────
+
+def login_page():
+    st.markdown(
+        """
+        <div class="login-container">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">⚡</div>
+                <h1 class="gradient-text" style="font-size: 2.5rem;">OdooExplorer</h1>
+                <p style="color: #94a3b8; font-size: 1.1rem;">Système de Traitement Premium</p>
+            </div>
+        """, unsafe_allow_html=True
+    )
+    
+    user = st.text_input("UTILISATEUR", placeholder="Techlab")
+    pwd = st.text_input("MOT DE PASSE", type="password", placeholder="••••••••")
+    
+    st.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
+    
+    if st.button("AUTHENTIFICATION", use_container_width=True):
+        if user == "Techlab" and pwd == "Techlab":
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.toast("🚫 Accès Refusé", icon="🚫")
+            
+    st.markdown('</div>', unsafe_allow_html=True)
+
+if not st.session_state.authenticated:
+    login_page()
+    st.stop()
+
+# ─── Navigation & Header ─────────────────────────────────────────────────────
 st.markdown(
     """
     <div class="main-header">
-        <h1>🧹 OdooExcelCleaner</h1>
-        <p>Nettoyage et renommage d'exports Excel Odoo — interface professionnelle</p>
+        <h1 class="gradient-text">OdooExcelCleaner</h1>
+        <p style="color: #94a3b8; font-size: 1.2rem; margin-top: 0.5rem;">Traitement de données haute performance</p>
     </div>
     """,
     unsafe_allow_html=True,
 )
+
 
 # ─── Chargement du mapping ────────────────────────────────────────────────────
 
