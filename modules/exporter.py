@@ -5,41 +5,43 @@ import io
 
 
 def export_excel(df: pd.DataFrame) -> bytes:
-    """Génère un fichier Excel (.xlsx) en mémoire et retourne les octets."""
-    # Création d'une copie pour ne pas modifier l'affichage Streamlit
+    """Génère un fichier Excel (.xlsx) en mémoire avec protection STRICHTE des virgules."""
     df_export = df.copy()
     
     output = io.BytesIO()
-    # On utilise xlsxwriter pour avoir un contrôle total sur les types Excel
+    # Utilisation de l'engine xlsxwriter pour un contrôle cellule par cellule
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        df_export.to_excel(writer, index=False, sheet_name="Sheet1")
-        
+        # On n'écrit PAS tout de suite avec df.to_excel pour éviter la conversion automatique de pandas
         workbook  = writer.book
-        worksheet = writer.sheets["Sheet1"]
+        worksheet = workbook.add_worksheet("Sheet1")
         
-        # On définit un format TEXTE strict pour Excel
+        # Format Texte strict pour Excel
         text_format = workbook.add_format({'num_format': '@'})
+        header_format = workbook.add_format({'bold': True, 'bg_color': '#D7E4BC', 'border': 1})
 
-        for i, col in enumerate(df_export.columns):
-            # 1. On vérifie si la colonne contient des données qui ressemblent à des prix avec virgule
-            # On le fait de manière très large pour ne rien rater
-            sample = df_export[col].astype(str)
-            if sample.str.contains(',').any():
-                # On applique le format TEXTE à TOUTE la colonne dans Excel
-                # Cela empêche Excel de transformer "15640,05" en nombre et de casser la virgule
-                worksheet.set_column(i, i, None, text_format)
-            
-            # 2. Ajustement de la largeur
-            max_val = sample.str.len().max()
-            if pd.isna(max_val): max_val = 10
-            column_len = max(max_val, len(col)) + 2
-            # Si on n'a pas appliqué le text_format au dessus, on ajuste juste la largeur
-            if not sample.str.contains(',').any():
-                worksheet.set_column(i, i, column_len)
-            else:
-                # Si format texte, on ajuste la largeur avec le format
-                worksheet.set_column(i, i, column_len, text_format)
+        # 1. Écrire les en-têtes
+        for col_num, value in enumerate(df_export.columns.values):
+            worksheet.write(0, col_num, value, header_format)
+
+        # 2. Écrire les données ligne par ligne, cellule par cellule
+        for row_num, row_data in enumerate(df_export.values):
+            for col_num, cell_value in enumerate(row_data):
+                val_str = str(cell_value) if cell_value is not None else ""
                 
+                # CONDITION CRITIQUE : Si la valeur contient une virgule ou un point,
+                # on FORCE l'écriture en tant que TEXTE pour qu'Excel ne touche à rien
+                if "," in val_str or "." in val_str:
+                    worksheet.write_string(row_num + 1, col_num, val_str, text_format)
+                else:
+                    # Pour les autres valeurs, écriture normale
+                    worksheet.write(row_num + 1, col_num, cell_value)
+
+        # 3. Ajustement de la largeur des colonnes
+        for i, col in enumerate(df_export.columns):
+            max_len = df_export[col].astype(str).str.len().max()
+            if pd.isna(max_len): max_len = 10
+            worksheet.set_column(i, i, max_len + 3)
+            
     return output.getvalue()
 
 
