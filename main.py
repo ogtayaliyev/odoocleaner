@@ -31,6 +31,7 @@ from modules.column_manager import (
     drop_column,
     rename_column,
     apply_mapping,
+    format_date_columns,
 )
 from modules.row_manager import drop_empty_rows, drop_rows_where_zero
 from modules.exporter import export_excel, export_csv
@@ -364,6 +365,15 @@ with tab_clean_col:
             st.session_state.df_current = drop_column(df, col_to_drop)
             st.toast(f"✅ Colonne supprimée : {col_to_drop}")
             st.rerun()
+
+    st.markdown("---")
+    st.subheader("📅 Formatage des dates")
+    st.info("Cette action détecte automatiquement les colonnes contenant des dates et les formate en **JJ/MM/AAAA**.")
+    if st.button("📅 Formater toutes les dates", use_container_width=True):
+        push_history("Formatage des dates")
+        st.session_state.df_current = format_date_columns(df)
+        st.success("✅ Dates formatées en JJ/MM/AAAA")
+        st.rerun()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ONGLET 2 — Lignes

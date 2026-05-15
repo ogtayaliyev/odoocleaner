@@ -52,3 +52,20 @@ def apply_mapping(df: pd.DataFrame, mapping: Dict[str, str]) -> Tuple[pd.DataFra
 
     new_df = df.rename(columns=rename_dict)
     return new_df, applied, skipped
+
+
+def format_date_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Détecte et formate les colonnes de date au format JJ/MM/AAAA."""
+    df = df.copy()
+    for col in df.columns:
+        # On tente la conversion seulement si la colonne contient des chaînes ou des dates
+        if df[col].dtype == 'object' or pd.api.types.is_datetime64_any_dtype(df[col]):
+            try:
+                # Tentative de conversion en datetime
+                temp_dates = pd.to_datetime(df[col], errors='coerce')
+                # Si au moins 50% des valeurs non vides sont des dates valides, on formate
+                if temp_dates.notna().sum() > 0.5 * df[col].notna().sum():
+                    df[col] = temp_dates.dt.strftime('%d/%m/%Y')
+            except:
+                continue
+    return df
