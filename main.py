@@ -179,38 +179,82 @@ init_state()
 # ─── Authentification ────────────────────────────────────────────────────────
 
 def login_page():
-    """Affiche une page de connexion simple."""
+    """Affiche une page de connexion élégante et centrée."""
     st.markdown(
         """
         <style>
+        /* On masque les menus Streamlit sur la page de login pour un look pur app */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 5rem;
+        }
+
         .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 2rem;
-            background: #1a1a2e;
-            border-radius: 15px;
+            width: 100%;
+            max-width: 450px;
+            padding: 3rem;
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 24px;
             border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             text-align: center;
+        }
+        
+        .login-logo {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .login-title {
+            color: #ffffff;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Style spécifique pour les inputs dans le container */
+        div[data-testid="stTextInput"] label {
+            color: #cbd5e1 !important;
+            font-weight: 500;
         }
         </style>
         """, unsafe_allow_html=True
     )
     
+    st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
     with st.container():
         st.markdown('<div class="login-container">', unsafe_allow_html=True)
-        st.title("🔒 Connexion")
-        st.markdown("Veuillez vous identifier pour accéder à l'outil.")
+        st.markdown('<span class="login-logo">🧹</span>', unsafe_allow_html=True)
+        st.markdown('<div class="login-title">OdooExcelCleaner</div>', unsafe_allow_html=True)
+        st.markdown('<div class="login-subtitle">Connectez-vous pour accéder à votre espace de nettoyage</div>', unsafe_allow_html=True)
         
         user = st.text_input("Utilisateur", placeholder="Nom d'utilisateur")
         pwd = st.text_input("Mot de passe", type="password", placeholder="••••••••")
         
-        if st.button("Se connecter", use_container_width=True, type="primary"):
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Se connecter au tableau de bord", use_container_width=True, type="primary"):
             if user == "Techlab" and pwd == "Techlab":
                 st.session_state.authenticated = True
                 st.rerun()
             else:
-                st.error("Identifiants incorrects")
+                st.error("Identifiants incorrects. Veuillez réessayer.")
+        
+        st.markdown('<div style="margin-top: 2rem; font-size: 0.8rem; color: #475569;">Techlab Deployment System v1.0</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if not st.session_state.authenticated:
     login_page()
