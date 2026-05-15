@@ -54,18 +54,22 @@ def apply_mapping(df: pd.DataFrame, mapping: Dict[str, str]) -> Tuple[pd.DataFra
     return new_df, applied, skipped
 
 
-def format_date_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Détecte et formate les colonnes de date au format JJ/MM/AAAA."""
-    # ... (code existant non modifié si possible, mais je dois rajouter la nouvelle fonction en dessous)
+def format_date_columns(df: pd.DataFrame, target_columns: list) -> pd.DataFrame:
+    """Formate uniquement les colonnes sélectionnées au format JJ/MM/AAAA."""
+    df = df.copy()
+    for col in target_columns:
+        if col in df.columns:
+            try:
+                df[col] = pd.to_datetime(df[col], errors='coerce').dt.strftime('%d/%m/%Y')
+            except:
+                continue
     return df
 
 
 def clean_numeric_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
-    """Supprime les virgules et points d'une colonne pour la rendre purement numérique."""
+    """Nettoie une colonne numérique : garde les virgules décimales et supprime les espaces/points de milliers."""
     df = df.copy()
     if column_name in df.columns:
-        # On convertit en chaîne, on enlève les points et virgules, puis on tente de convertir en nombre
-        df[column_name] = df[column_name].astype(str).str.replace(r'[.,]', '', regex=True)
-        # On essaie de convertir en numérique si possible
-        df[column_name] = pd.to_numeric(df[column_name], errors='ignore')
+        # On garde les virgules, on supprime les points et espaces (souvent utilisés pour les milliers)
+        df[column_name] = df[column_name].astype(str).str.replace(r'[ .]', '', regex=True)
     return df

@@ -465,16 +465,8 @@ with tab_clean_col:
     if st.button("📅 Formater les colonnes sélectionnées", use_container_width=True):
         if date_cols_to_format:
             push_history(f"Formatage dates: {', '.join(date_cols_to_format)}")
-            
-            # Application manuelle sur les colonnes choisies
-            temp_df = df.copy()
-            for col in date_cols_to_format:
-                try:
-                    temp_df[col] = pd.to_datetime(temp_df[col], errors='coerce').dt.strftime('%d/%m/%Y')
-                except:
-                    st.error(f"Impossible de formater la colonne {col}")
-            
-            st.session_state.df_current = temp_df
+            # Appel avec la liste des colonnes
+            st.session_state.df_current = format_date_columns(df, date_cols_to_format)
             st.success(f"✅ {len(date_cols_to_format)} colonne(s) formatée(s)")
             st.rerun()
         else:
