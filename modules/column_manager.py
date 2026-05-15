@@ -70,6 +70,7 @@ def clean_numeric_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """Nettoie une colonne numérique : garde les virgules décimales et supprime les espaces/points de milliers."""
     df = df.copy()
     if column_name in df.columns:
-        # On garde les virgules, on supprime les points et espaces (souvent utilisés pour les milliers)
+        # On remplace les points par rien, et les espaces par rien
+        # Mais on GARDE les virgules
         df[column_name] = df[column_name].astype(str).str.replace(r'[ .]', '', regex=True)
     return df

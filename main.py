@@ -474,7 +474,7 @@ with tab_clean_col:
 
     st.markdown("---")
     st.subheader("🔢 Nettoyage des Prix / Nombres")
-    st.info("Supprime les points et virgules des colonnes sélectionnées (ex: 1.250,50 → 125050).")
+    st.info("Supprime les points (milliers) et espaces, mais **GARDE les virgules décimales**.")
     
     num_cols_to_clean = st.multiselect(
         "Choisir les colonnes à nettoyer (Prix, etc.)", 
@@ -482,7 +482,7 @@ with tab_clean_col:
         key="num_clean_select"
     )
     
-    if st.button("🔢 Nettoyer les prix (enlever . et ,)", use_container_width=True):
+    if st.button("🔢 Nettoyer les prix (enlever . et espaces)", use_container_width=True):
         if num_cols_to_clean:
             push_history(f"Nettoyage numérique: {', '.join(num_cols_to_clean)}")
             
