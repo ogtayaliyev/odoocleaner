@@ -32,6 +32,7 @@ from modules.column_manager import (
     rename_column,
     apply_mapping,
     format_date_columns,
+    clean_numeric_column,
 )
 from modules.row_manager import drop_empty_rows, drop_rows_where_zero
 from modules.exporter import export_excel, export_csv
@@ -475,6 +476,30 @@ with tab_clean_col:
             
             st.session_state.df_current = temp_df
             st.success(f"✅ {len(date_cols_to_format)} colonne(s) formatée(s)")
+            st.rerun()
+        else:
+            st.warning("Veuillez sélectionner au moins une colonne.")
+
+    st.markdown("---")
+    st.subheader("🔢 Nettoyage des Prix / Nombres")
+    st.info("Supprime les points et virgules des colonnes sélectionnées (ex: 1.250,50 → 125050).")
+    
+    num_cols_to_clean = st.multiselect(
+        "Choisir les colonnes à nettoyer (Prix, etc.)", 
+        df.columns.tolist(),
+        key="num_clean_select"
+    )
+    
+    if st.button("🔢 Nettoyer les prix (enlever . et ,)", use_container_width=True):
+        if num_cols_to_clean:
+            push_history(f"Nettoyage numérique: {', '.join(num_cols_to_clean)}")
+            
+            temp_df = df.copy()
+            for col in num_cols_to_clean:
+                temp_df = clean_numeric_column(temp_df, col)
+            
+            st.session_state.df_current = temp_df
+            st.success(f"✅ {len(num_cols_to_clean)} colonne(s) nettoyée(s)")
             st.rerun()
         else:
             st.warning("Veuillez sélectionner au moins une colonne.")

@@ -56,16 +56,16 @@ def apply_mapping(df: pd.DataFrame, mapping: Dict[str, str]) -> Tuple[pd.DataFra
 
 def format_date_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Détecte et formate les colonnes de date au format JJ/MM/AAAA."""
+    # ... (code existant non modifié si possible, mais je dois rajouter la nouvelle fonction en dessous)
+    return df
+
+
+def clean_numeric_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    """Supprime les virgules et points d'une colonne pour la rendre purement numérique."""
     df = df.copy()
-    for col in df.columns:
-        # On tente la conversion seulement si la colonne contient des chaînes ou des dates
-        if df[col].dtype == 'object' or pd.api.types.is_datetime64_any_dtype(df[col]):
-            try:
-                # Tentative de conversion en datetime
-                temp_dates = pd.to_datetime(df[col], errors='coerce')
-                # Si au moins 50% des valeurs non vides sont des dates valides, on formate
-                if temp_dates.notna().sum() > 0.5 * df[col].notna().sum():
-                    df[col] = temp_dates.dt.strftime('%d/%m/%Y')
-            except:
-                continue
+    if column_name in df.columns:
+        # On convertit en chaîne, on enlève les points et virgules, puis on tente de convertir en nombre
+        df[column_name] = df[column_name].astype(str).str.replace(r'[.,]', '', regex=True)
+        # On essaie de convertir en numérique si possible
+        df[column_name] = pd.to_numeric(df[column_name], errors='ignore')
     return df
