@@ -276,9 +276,17 @@ with tab_clean_col:
             new_name = st.text_input("Nouveau nom", key="rename_new")
             if st.button("Valider le renommage", key="btn_rename"):
                 if new_name.strip():
-                    push_history(f"Renommage : {col_to_rename} → {new_name.strip()}")
-                    st.session_state.df_current = rename_column(df, col_to_rename, new_name.strip())
-                    st.toast(f"✅ Colonne renommée : {col_to_rename} → {new_name.strip()}")
+                    new_n = new_name.strip()
+                    push_history(f"Renommage : {col_to_rename} → {new_n}")
+                    
+                    # Action de renommage
+                    st.session_state.df_current = rename_column(df, col_to_rename, new_n)
+                    
+                    # SAUVEGARDE AUTOMATIQUE DANS LE MAPPING
+                    st.session_state.mapping[col_to_rename] = new_n
+                    save_mapping(st.session_state.mapping)
+                    
+                    st.toast(f"✅ Renommé et enregistré dans le mapping : {col_to_rename} → {new_n}")
                     st.rerun()
                 else:
                     st.warning("Entrez un nouveau nom.")
