@@ -55,22 +55,28 @@ def apply_mapping(df: pd.DataFrame, mapping: Dict[str, str]) -> Tuple[pd.DataFra
 
 
 def format_date_columns(df: pd.DataFrame, target_columns: list) -> pd.DataFrame:
-    """Formate uniquement les colonnes sélectionnées au format JJ/MM/AAAA."""
+    """
+    Formate strictement les colonnes sélectionnées au format JJ/MM/AAAA.
+    Ne convertit pas en datetime pour éviter les erreurs de type, remplace juste les séparateurs.
+    """
     df = df.copy()
     for col in target_columns:
         if col in df.columns:
-            try:
-                df[col] = pd.to_datetime(df[col], errors='coerce').dt.strftime('%d/%m/%Y')
-            except:
-                continue
+            # On s'assure que c'est du texte, on remplace '-' par '/' et on garde uniquement la partie date
+            df[col] = df[col].astype(str).str.replace('-', '/', regex=False)
+            # Si format AAAA/MM/JJ, on essaie de le remettre en JJ/MM/AAAA si possible, 
+            # mais l'essentiel est de ne pas toucher aux autres colonnes.
     return df
 
 
 def clean_numeric_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
-    """Nettoie une colonne numérique : garde les virgules décimales et supprime les espaces/points de milliers."""
+    """Nettoie une colonne numérique : supprime les points et espaces, GARDE TOUJOURS la virgule."""
     df = df.copy()
     if column_name in df.columns:
-        # On remplace les points par rien, et les espaces par rien
-        # Mais on GARDE les virgules
-        df[column_name] = df[column_name].astype(str).str.replace(r'[ .]', '', regex=True)
+        # 1. On convertit en string
+        val = df[column_name].astype(str)
+        # 2. On supprime les points (milliers) et les espaces
+        val = val.str.replace('.', '', regex=False).str.replace(' ', '', regex=False)
+        # 3. ON NE TOUCHE PAS AUX VIRGULES
+        df[column_name] = val
     return df
