@@ -472,30 +472,6 @@ with tab_clean_col:
         else:
             st.warning("Veuillez sélectionner au moins une colonne.")
 
-    st.markdown("---")
-    st.subheader("🔢 Nettoyage des Prix / Nombres")
-    st.info("Supprime les points (milliers) et espaces, mais **GARDE les virgules décimales**.")
-    
-    num_cols_to_clean = st.multiselect(
-        "Choisir les colonnes à nettoyer (Prix, etc.)", 
-        df.columns.tolist(),
-        key="num_clean_select"
-    )
-    
-    if st.button("🔢 Nettoyer les prix (enlever . et espaces)", use_container_width=True):
-        if num_cols_to_clean:
-            push_history(f"Nettoyage numérique: {', '.join(num_cols_to_clean)}")
-            
-            temp_df = df.copy()
-            for col in num_cols_to_clean:
-                temp_df = clean_numeric_column(temp_df, col)
-            
-            st.session_state.df_current = temp_df
-            st.success(f"✅ {len(num_cols_to_clean)} colonne(s) nettoyée(s)")
-            st.rerun()
-        else:
-            st.warning("Veuillez sélectionner au moins une colonne.")
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # ONGLET 2 — Lignes
 # ═══════════════════════════════════════════════════════════════════════════════
