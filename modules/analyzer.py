@@ -23,7 +23,9 @@ def analyze_dataframe(df: pd.DataFrame) -> dict[str, Any]:
 
     for col in df.columns:
         series = df[col]
-        non_null = int(series.notna().sum())
+        # On considère comme non-vide ce qui n'est pas NaN ET qui n'est pas une chaîne vide
+        non_null_mask = series.notna() & (series.astype(str).str.strip() != "")
+        non_null = int(non_null_mask.sum())
         is_empty = non_null == 0
         fill_pct = (non_null / len(df) * 100) if len(df) > 0 else 0.0
 

@@ -5,8 +5,11 @@ from typing import Dict, List, Tuple
 
 
 def drop_empty_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Supprime toutes les colonnes entièrement vides (NaN)."""
-    return df.dropna(axis=1, how="all")
+    """Supprime toutes les colonnes entièrement vides (NaN ou chaînes vides)."""
+    # On masque les cellules qui sont soit NaN soit des chaînes vides (après strip)
+    is_empty = df.isna() | (df.astype(str).apply(lambda x: x.str.strip()) == "")
+    cols_to_keep = [col for col in df.columns if not is_empty[col].all()]
+    return df[cols_to_keep]
 
 
 def drop_zero_columns(df: pd.DataFrame) -> pd.DataFrame:

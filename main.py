@@ -36,6 +36,8 @@ from modules.column_manager import (
 )
 from modules.row_manager import drop_empty_rows, drop_rows_where_zero
 from modules.exporter import export_excel, export_csv
+from modules.ui import inject_global_styles, render_main_header
+from modules.auth import require_auth, logout
 
 # ─── Configuration Streamlit ─────────────────────────────────────────────────
 st.set_page_config(
@@ -44,101 +46,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# ─── CSS Thème Premium 2026 (Tailwind-like + Glassmorphism) ──────────────────
-st.markdown(
-    """
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
-    :root {
-        --primary: #8b5cf6;
-        --secondary: #ec4899;
-        --bg-dark: #0f172a;
-    }
-
-    * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
-
-    /* Fond global */
-    .stApp {
-        background-color: var(--bg-dark);
-        background-image: 
-            radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-            radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
-    }
-
-    /* Header Styling */
-    .main-header {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-    .gradient-text {
-        background: linear-gradient(90deg, #8b5cf6, #ec4899);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800;
-        font-size: 3rem;
-    }
-
-    /* Cards & Containers */
-    div[data-testid="stExpander"] {
-        background: rgba(30, 41, 59, 0.5) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 16px !important;
-    }
-
-    /* Buttons */
-    .stButton > button {
-        background: linear-gradient(90deg, #7c3aed, #db2777) !important;
-        border: none !important;
-        color: white !important;
-        padding: 0.6rem 1.5rem !important;
-        border-radius: 12px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25) !important;
-    }
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4) !important;
-    }
-
-    /* Dataframe Styling */
-    div[data-testid="stDataFrame"] {
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 16px !important;
-        padding: 10px;
-        background: rgba(15, 23, 42, 0.8) !important;
-    }
-
-    /* Inputs */
-    input {
-        background: rgba(0, 0, 0, 0.2) !important;
-        border-radius: 10px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
-    }
-
-    /* Login UI */
-    .login-container {
-        max-width: 500px;
-        margin: 100px auto;
-        padding: 4rem;
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(30px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 40px;
-        box-shadow: 0 40px 100px rgba(0,0,0,0.5);
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+inject_global_styles()
 
 # ─── Chargement du mapping ────────────────────────────────────────────────────
 
@@ -153,8 +61,15 @@ def load_mapping() -> dict:
         }
         with open(MAPPING_PATH, "w", encoding="utf-8") as f:
             json.dump(default, f, ensure_ascii=False, indent=2)
+        st.toast("⚠️ mapping.json créé avec des exemples — pensez à le personnaliser !", icon="⚠️")
     with open(MAPPING_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def save_mapping(mapping: dict) -> None:
+    """Sauvegarde le mapping dans le fichier JSON."""
+    os.makedirs(os.path.dirname(MAPPING_PATH), exist_ok=True)
+    with open(MAPPING_PATH, "w", encoding="utf-8") as f:
+        json.dump(mapping, f, ensure_ascii=False, indent=2)
 
 # ─── Initialisation session_state ────────────────────────────────────────────
 
@@ -175,247 +90,11 @@ def init_state() -> None:
 init_state()
 
 # ─── Login Page ──────────────────────────────────────────────────────────────
-
-def login_page():
-    st.markdown(
-        """
-        <div class="login-container">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">⚡</div>
-                <h1 class="gradient-text" style="font-size: 2.5rem;">OdooExplorer</h1>
-                <p style="color: #94a3b8; font-size: 1.1rem;">Système de Traitement Premium</p>
-            </div>
-        """, unsafe_allow_html=True
-    )
-    
-    user = st.text_input("UTILISATEUR", placeholder="Techlab")
-    pwd = st.text_input("MOT DE PASSE", type="password", placeholder="••••••••")
-    
-    st.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
-    
-    if st.button("AUTHENTIFICATION", use_container_width=True):
-        if user == "Techlab" and pwd == "Techlab":
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.toast("🚫 Accès Refusé", icon="🚫")
-            
-    st.markdown('</div>', unsafe_allow_html=True)
-
-if not st.session_state.authenticated:
-    login_page()
-    st.stop()
+require_auth()
 
 # ─── Navigation & Header ─────────────────────────────────────────────────────
-st.markdown(
-    """
-    <div class="main-header">
-        <h1 class="gradient-text">OdooExcelCleaner</h1>
-        <p style="color: #94a3b8; font-size: 1.2rem; margin-top: 0.5rem;">Traitement de données haute performance</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+render_main_header()
 
-
-# ─── Chargement du mapping ────────────────────────────────────────────────────
-
-def load_mapping() -> dict:
-    """Charge le mapping JSON, crée un fichier d'exemple si absent."""
-    os.makedirs(os.path.dirname(MAPPING_PATH), exist_ok=True)
-    if not os.path.exists(MAPPING_PATH):
-        default = {
-            "Lignes de facture/BU": "BU",
-            "Delivery mode": "Mode de livraison",
-            "Prix unitaire": "Prix HT",
-        }
-        with open(MAPPING_PATH, "w", encoding="utf-8") as f:
-            json.dump(default, f, ensure_ascii=False, indent=2)
-        st.toast("⚠️ mapping.json créé avec des exemples — pensez à le personnaliser !", icon="⚠️")
-    with open(MAPPING_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def save_mapping(mapping: dict) -> None:
-    """Sauvegarde le mapping dans le fichier JSON."""
-    os.makedirs(os.path.dirname(MAPPING_PATH), exist_ok=True)
-    with open(MAPPING_PATH, "w", encoding="utf-8") as f:
-        json.dump(mapping, f, ensure_ascii=False, indent=2)
-
-
-# ─── Initialisation session_state ────────────────────────────────────────────
-
-def init_state() -> None:
-    defaults = {
-        "authenticated": False,   # État de connexion
-        "df_original": None,      # DataFrame original — jamais modifié
-        "df_current": None,       # DataFrame de travail courant
-        "history": [],            # Liste de DataFrames pour Annuler
-        "action_log": [],         # Journal des actions textuelles
-        "mapping": load_mapping(),
-        "file_name": None,
-    }
-    for k, v in defaults.items():
-        if k not in st.session_state:
-            st.session_state[k] = v
-
-
-init_state()
-
-# ─── Authentification ────────────────────────────────────────────────────────
-
-def login_page():
-    """Affiche une page de connexion ultra-moderne 2026."""
-    st.markdown(
-        """
-        <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-
-        /* Background anime futuriste */
-        .stApp {
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
-        }
-
-        .login-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 80vh;
-        }
-
-        .login-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 32px;
-            padding: 3.5rem;
-            width: 100%;
-            max-width: 480px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease;
-        }
-
-        .login-card:hover {
-            border: 1px solid rgba(139, 92, 246, 0.3);
-        }
-
-        .gradient-text {
-            background: linear-gradient(90deg, #8b5cf6, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-            font-size: 2.2rem;
-            letter-spacing: -0.02em;
-        }
-
-        .login-title {
-            margin-bottom: 0.5rem;
-            text-align: center;
-        }
-
-        .login-subtitle {
-            color: #94a3b8;
-            text-align: center;
-            font-size: 0.95rem;
-            margin-bottom: 2.5rem;
-            font-weight: 400;
-        }
-
-        /* Glassmorphism Inputs */
-        div[data-testid="stTextInput"] input {
-            background: rgba(0, 0, 0, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 12px !important;
-            color: white !important;
-            padding: 0.8rem 1rem !important;
-            transition: all 0.2s ease !important;
-        }
-
-        div[data-testid="stTextInput"] input:focus {
-            border: 1px solid #8b5cf6 !important;
-            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
-        }
-
-        /* Neon Button 2026 */
-        .stButton > button {
-            background: linear-gradient(90deg, #7c3aed, #db2777) !important;
-            border: none !important;
-            color: white !important;
-            padding: 0.75rem 0 !important;
-            font-weight: 600 !important;
-            border-radius: 14px !important;
-            font-size: 1rem !important;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.3) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-
-        .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(124, 58, 237, 0.4) !important;
-            background: linear-gradient(90deg, #8b5cf6, #ec4899) !important;
-        }
-
-        .stButton > button:active {
-            transform: translateY(0);
-        }
-
-        .floating-icon {
-            font-size: 3rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-
-        label[data-testid="stWidgetLabel"] {
-            color: #e2e8f0 !important;
-            font-size: 0.85rem !important;
-            margin-bottom: 0.4rem !important;
-            font-weight: 500 !important;
-        }
-        </style>
-        """, unsafe_allow_html=True
-    )
-    
-    st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
-    st.markdown('<div class="login-card">', unsafe_allow_html=True)
-    
-    st.markdown('<div class="floating-icon">✨</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-title"><span class="gradient-text">OdooExplorer</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-subtitle">Système de Nettoyage de Données Intelligent</div>', unsafe_allow_html=True)
-    
-    # On utilise des colonnes pour centrer les inputs Streamlit à l'intérieur du card HTML
-    user = st.text_input("NOM D'UTILISATEUR", placeholder="ex: Techlab")
-    pwd = st.text_input("MOT DE PASSE", type="password", placeholder="••••••••")
-    
-    st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
-    
-    if st.button("ACCÉDER AU SYSTÈME", use_container_width=True):
-        if user == "Techlab" and pwd == "Techlab":
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.toast("🚫 Accès refusé : Identifiants incorrects", icon="🚫")
-    
-    st.markdown('<div style="margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: #64748b; letter-spacing: 0.1em; font-weight: 600;">TECHLAB © 2026 • PREMIUM EDITION</div>', unsafe_allow_html=True)
-    st.markdown('</div></div>', unsafe_allow_html=True)
-
-if not st.session_state.authenticated:
-    login_page()
-    st.stop()
-
-# ─── Helpers ─────────────────────────────────────────────────────────────────
 
 def push_history(label: str) -> None:
     """Sauvegarde l'état courant dans l'historique avant une action."""
@@ -451,16 +130,18 @@ with st.sidebar:
         fname = uploaded.name
         ext = fname.rsplit(".", 1)[-1].lower()
         try:
+            # PROTECTION CRITIQUE : On force TOUTES les colonnes en texte pour éviter
+            # que Pandas convertisse automatiquement les nombres avec virgules
             if ext == "csv":
-                df_raw = pd.read_csv(uploaded, encoding="utf-8-sig")
+                df_raw = pd.read_csv(uploaded, encoding="utf-8-sig", dtype=str, keep_default_na=False)
             else:
                 try:
-                    # Tentative standard avec openpyxl (xlsx)
-                    df_raw = pd.read_excel(uploaded, engine="openpyxl")
+                    # Tentative standard avec openpyxl (xlsx) - TOUT EN TEXTE
+                    df_raw = pd.read_excel(uploaded, engine="openpyxl", dtype=str, keep_default_na=False)
                 except Exception:
                     # Repli sur le moteur par défaut (peut gérer xls ou formats hybrides)
                     uploaded.seek(0)
-                    df_raw = pd.read_excel(uploaded)
+                    df_raw = pd.read_excel(uploaded, dtype=str, keep_default_na=False)
 
             if (
                 st.session_state.file_name != fname
@@ -498,6 +179,10 @@ with st.sidebar:
                 '<div class="success-box">✅ Aucune modification — fichier original</div>',
                 unsafe_allow_html=True,
             )
+    
+    st.markdown("---")
+    if st.button("🚪 Déconnexion", use_container_width=True, type="secondary"):
+        logout()
 
 # ─── Corps principal ──────────────────────────────────────────────────────────
 

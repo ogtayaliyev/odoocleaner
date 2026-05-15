@@ -6,7 +6,7 @@ import io
 
 def export_excel(df: pd.DataFrame) -> bytes:
     """Génère un fichier Excel (.xlsx) en mémoire avec protection STRICHTE des virgules."""
-    df_export = df.copy()
+    df_export = df.copy().fillna("")
     
     output = io.BytesIO()
     # Utilisation de l'engine xlsxwriter pour un contrôle cellule par cellule
@@ -26,14 +26,17 @@ def export_excel(df: pd.DataFrame) -> bytes:
         # 2. Écrire les données ligne par ligne, cellule par cellule
         for row_num, row_data in enumerate(df_export.values):
             for col_num, cell_value in enumerate(row_data):
-                val_str = str(cell_value) if cell_value is not None else ""
-                
-                # CONDITION CRITIQUE : Si la valeur contient une virgule ou un point,
-                # on FORCE l'écriture en tant que TEXTE pour qu'Excel ne touche à rien
-                if "," in val_str or "." in val_str:
-                    worksheet.write_string(row_num + 1, col_num, val_str, text_format)
+                if pd.isna(cell_value) or cell_value == "":
+                    worksheet.write_string(row_num + 1, col_num, "", text_format)
+                elif isinstance(cell_value, (int, float)):
+                    # Les nombres (prix, etc) doivent être écrits comme de vrais nombres
+                    # pour qu'Excel conserve les décimales et permette les calculs
+                    worksheet.write_number(row_num + 1, col_num, cell_value)
+                elif isinstance(cell_value, str):
+                    # Les textes sont forcés en texte strict pour éviter 
+                    # qu'Excel ne supprime les zéros ou ne transforme en date
+                    worksheet.write_string(row_num + 1, col_num, cell_value, text_format)
                 else:
-                    # Pour les autres valeurs, écriture normale
                     worksheet.write(row_num + 1, col_num, cell_value)
 
         # 3. Ajustement de la largeur des colonnes
@@ -46,7 +49,7 @@ def export_excel(df: pd.DataFrame) -> bytes:
 
 
 def export_csv(df: pd.DataFrame) -> bytes:
-    """Génère un fichier CSV en mémoire et retourne les octets (UTF-8 avec BOM pour Excel)."""
+    """Génère un fichier CSV en mémoire (Format Français : séparateur ';' et décimale ',')."""
     output = io.StringIO()
-    df.to_csv(output, index=False, encoding="utf-8-sig")
+    df.to_csv(output, index=False, sep=';', decimal=',', encoding="utf-8-sig")
     return output.getvalue().encode("utf-8-sig")
