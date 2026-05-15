@@ -161,6 +161,7 @@ def save_mapping(mapping: dict) -> None:
 
 def init_state() -> None:
     defaults = {
+        "authenticated": False,   # État de connexion
         "df_original": None,      # DataFrame original — jamais modifié
         "df_current": None,       # DataFrame de travail courant
         "history": [],            # Liste de DataFrames pour Annuler
@@ -174,6 +175,46 @@ def init_state() -> None:
 
 
 init_state()
+
+# ─── Authentification ────────────────────────────────────────────────────────
+
+def login_page():
+    """Affiche une page de connexion simple."""
+    st.markdown(
+        """
+        <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 2rem;
+            background: #1a1a2e;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        </style>
+        """, unsafe_allow_html=True
+    )
+    
+    with st.container():
+        st.markdown('<div class="login-container">', unsafe_allow_html=True)
+        st.title("🔒 Connexion")
+        st.markdown("Veuillez vous identifier pour accéder à l'outil.")
+        
+        user = st.text_input("Utilisateur", placeholder="Nom d'utilisateur")
+        pwd = st.text_input("Mot de passe", type="password", placeholder="••••••••")
+        
+        if st.button("Se connecter", use_container_width=True, type="primary"):
+            if user == "Techlab" and pwd == "Techlab":
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Identifiants incorrects")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+if not st.session_state.authenticated:
+    login_page()
+    st.stop()
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -368,12 +409,31 @@ with tab_clean_col:
 
     st.markdown("---")
     st.subheader("📅 Formatage des dates")
-    st.info("Cette action détecte automatiquement les colonnes contenant des dates et les formate en **JJ/MM/AAAA**.")
-    if st.button("📅 Formater toutes les dates", use_container_width=True):
-        push_history("Formatage des dates")
-        st.session_state.df_current = format_date_columns(df)
-        st.success("✅ Dates formatées en JJ/MM/AAAA")
-        st.rerun()
+    st.info("Sélectionnez les colonnes à formater en **JJ/MM/AAAA**.")
+    
+    date_cols_to_format = st.multiselect(
+        "Choisir les colonnes de date", 
+        df.columns.tolist(),
+        key="date_format_select"
+    )
+    
+    if st.button("📅 Formater les colonnes sélectionnées", use_container_width=True):
+        if date_cols_to_format:
+            push_history(f"Formatage dates: {', '.join(date_cols_to_format)}")
+            
+            # Application manuelle sur les colonnes choisies
+            temp_df = df.copy()
+            for col in date_cols_to_format:
+                try:
+                    temp_df[col] = pd.to_datetime(temp_df[col], errors='coerce').dt.strftime('%d/%m/%Y')
+                except:
+                    st.error(f"Impossible de formater la colonne {col}")
+            
+            st.session_state.df_current = temp_df
+            st.success(f"✅ {len(date_cols_to_format)} colonne(s) formatée(s)")
+            st.rerun()
+        else:
+            st.warning("Veuillez sélectionner au moins une colonne.")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ONGLET 2 — Lignes
