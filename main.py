@@ -180,82 +180,151 @@ init_state()
 # ─── Authentification ────────────────────────────────────────────────────────
 
 def login_page():
-    """Affiche une page de connexion élégante et centrée."""
+    """Affiche une page de connexion ultra-moderne 2026."""
     st.markdown(
         """
         <style>
-        /* On masque les menus Streamlit sur la page de login pour un look pur app */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
+
+        /* Background anime futuriste */
+        .stApp {
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+        }
 
         .login-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding-top: 5rem;
+            height: 80vh;
         }
 
-        .login-container {
+        .login-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 3.5rem;
             width: 100%;
-            max-width: 450px;
-            padding: 3rem;
-            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            text-align: center;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
         }
-        
-        .login-logo {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            display: block;
+
+        .login-card:hover {
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            font-size: 2.2rem;
+            letter-spacing: -0.02em;
         }
 
         .login-title {
-            color: #ffffff;
-            font-size: 1.8rem;
-            font-weight: 700;
             margin-bottom: 0.5rem;
+            text-align: center;
         }
 
         .login-subtitle {
             color: #94a3b8;
+            text-align: center;
             font-size: 0.95rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
         }
 
-        /* Style spécifique pour les inputs dans le container */
-        div[data-testid="stTextInput"] label {
-            color: #cbd5e1 !important;
-            font-weight: 500;
+        /* Glassmorphism Inputs */
+        div[data-testid="stTextInput"] input {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            color: white !important;
+            padding: 0.8rem 1rem !important;
+            transition: all 0.2s ease !important;
+        }
+
+        div[data-testid="stTextInput"] input:focus {
+            border: 1px solid #8b5cf6 !important;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
+        }
+
+        /* Neon Button 2026 */
+        .stButton > button {
+            background: linear-gradient(90deg, #7c3aed, #db2777) !important;
+            border: none !important;
+            color: white !important;
+            padding: 0.75rem 0 !important;
+            font-weight: 600 !important;
+            border-radius: 14px !important;
+            font-size: 1rem !important;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.3) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .stButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(124, 58, 237, 0.4) !important;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899) !important;
+        }
+
+        .stButton > button:active {
+            transform: translateY(0);
+        }
+
+        .floating-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        label[data-testid="stWidgetLabel"] {
+            color: #e2e8f0 !important;
+            font-size: 0.85rem !important;
+            margin-bottom: 0.4rem !important;
+            font-weight: 500 !important;
         }
         </style>
         """, unsafe_allow_html=True
     )
     
     st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
-    with st.container():
-        st.markdown('<div class="login-container">', unsafe_allow_html=True)
-        st.markdown('<span class="login-logo">🧹</span>', unsafe_allow_html=True)
-        st.markdown('<div class="login-title">OdooExcelCleaner</div>', unsafe_allow_html=True)
-        st.markdown('<div class="login-subtitle">Connectez-vous pour accéder à votre espace de nettoyage</div>', unsafe_allow_html=True)
-        
-        user = st.text_input("Utilisateur", placeholder="Nom d'utilisateur")
-        pwd = st.text_input("Mot de passe", type="password", placeholder="••••••••")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Se connecter au tableau de bord", use_container_width=True, type="primary"):
-            if user == "Techlab" and pwd == "Techlab":
-                st.session_state.authenticated = True
-                st.rerun()
-            else:
-                st.error("Identifiants incorrects. Veuillez réessayer.")
-        
-        st.markdown('<div style="margin-top: 2rem; font-size: 0.8rem; color: #475569;">Techlab Deployment System v1.0</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-card">', unsafe_allow_html=True)
+    
+    st.markdown('<div class="floating-icon">✨</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-title"><span class="gradient-text">OdooExplorer</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">Système de Nettoyage de Données Intelligent</div>', unsafe_allow_html=True)
+    
+    # On utilise des colonnes pour centrer les inputs Streamlit à l'intérieur du card HTML
+    user = st.text_input("NOM D'UTILISATEUR", placeholder="ex: Techlab")
+    pwd = st.text_input("MOT DE PASSE", type="password", placeholder="••••••••")
+    
+    st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
+    
+    if st.button("ACCÉDER AU SYSTÈME", use_container_width=True):
+        if user == "Techlab" and pwd == "Techlab":
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.toast("🚫 Accès refusé : Identifiants incorrects", icon="🚫")
+    
+    st.markdown('<div style="margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: #64748b; letter-spacing: 0.1em; font-weight: 600;">TECHLAB © 2026 • PREMIUM EDITION</div>', unsafe_allow_html=True)
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
 if not st.session_state.authenticated:
     login_page()
